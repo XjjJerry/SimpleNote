@@ -13,12 +13,12 @@
 
 </head>
 
-<body style="background-color: rgba(0,0,0,0);overflow: hidden;pointer-events: none;">
+<body style="background-color: rgba(0,0,0,0);overflow: hidden;">
 	<div id="app" style="margin-left: 115px;">
 		<div class="scroll-list">
 			<div class="scroll-panel" v-for="(note,index) in noteList" :key="index" @click="switchNote(index)"
 				:class="{'out':index!=selectedIndex&&index!=selectedIndex-1&&index!=selectedIndex+1,'left':index==selectedIndex-1,'right':index==selectedIndex+1}">
-				<div class="scroll-body">
+				<div class="scroll-body" :class="true?colorClass[index%colorClass.length]:''">
 					<div v-html="note.md" class="body-content markdown-body"></div>
 					<div class="note-msg">
 						<span>{{note.enableRange}}</span>
@@ -36,6 +36,13 @@
 				<span class="iconfont" :class="{'icon-shang':isShowEdit,'icon-xiala':!isShowEdit}"></span>
 			</button>
 			<img src="./img/note.png" style="height: 30px;-webkit-app-region: drag;" />
+		</div>
+		<div style="padding: 5px 50px 10px 152px;">
+			<div class="glass calendar">
+				<div class="date-number-group" v-for="(group,index) in dateBuffer" :key="index">
+					<div class="date-number" v-for="(num,cindex) in group" :key="cindex">{{num}}</div>
+				</div>
+			</div>
 		</div>
 		<div class="work" :class="{'show':isShowEdit,'hide':!isShowEdit}">
 			<div class="menu">
@@ -62,8 +69,10 @@
 				<textarea class="text-area" rows="10" v-model="tmpBuffer"></textarea>
 			</div>
 			<div class="menu">
-				<button>
+				<button @click="menuCalendar()" style="position: relative;">
 					<span class="iconfont icon-rili"></span>
+					<span style="font-size: 0;position: absolute;top:0;bottom: 0;left: 0;right: 0;"
+						id="currentDateInput"></span>
 				</button>
 				<button @click="menuAll()">
 					<span class="iconfont icon-quanbu"></span>

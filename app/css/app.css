@@ -24,7 +24,7 @@ body img{
 	border: 1px solid rgba(200, 200, 200, 0.5);
 	box-shadow: 3px 3px 5px rgba(0, 0, 0, 0.4);
 	border-radius: 6px;
-	background-color: rgb(255, 250, 232);
+	/* background-color: rgb(255, 250, 232); */
 	font-size: unset;
 	padding: 5px 10px;
 
@@ -314,4 +314,51 @@ body img{
 
 .menu-list.hide {
 	animation: an_fadeLeftOut 0.3s ease-in-out 1 forwards;
+}
+
+.calendar{
+	/* background-color: rgba(246,80,64,1.0); */
+	background-color: rgba(200,200,200,0.4);
+	border: 1px solid rgb(200,200,200);
+	border-radius: 10px;
+	box-shadow: 0px 0px 5px rgba(0,0,0,0.4);
+	padding: 15px;
+	display: inline-block;
+}
+
+.calendar .date-number-group{
+	white-space: nowrap;
+	padding: 0 5px;
+	display: inline-block;
+	/* background-color: rgba(0,0,0,0.8); */
+	background-color: rgba(66,74,96,1.0);
+	border-radius: 6px;
+	margin: 0 5px;
+}
+
+.calendar .date-number-group .date-number{
+	font-size: 30px;
+	color: rgb(255,255,255);
+	font-weight: 800;
+	display: inline-block;
+	padding: 3px 3px;
+	/* border-radius: 6px; */
+	/* background-color: rgba(246,80,64,1.0); */
+	/* background-color: rgba(0,0,0,0.7); */
+}
+
+.note-color-green{
+	background-color: rgb(202,228,118);
+}
+
+.note-color-yellow{
+	background-color: rgb(251,235,147);
+}
+
+.note-color-blue{
+	background-color: rgb(147,203,223);
+}
+
+.note-color-pink{
+	background-color: rgb(252,104,166);
 }

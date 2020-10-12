@@ -10,13 +10,14 @@ const m_data = require("./app/util/dataOpeartor");
 function createWindow() {
   // 创建浏览器窗口
   const win = new BrowserWindow({
-    width: 900,
-    height: 500,
+    width: 940,
+    height: 610,
+    // height: 900,
     webPreferences: {
       nodeIntegration: true
     },
     resizable: false,
-    clickThrough: 'pointer-events',
+    // clickThrough: 'pointer-events',
     transparent: true,
     frame: false,
     minimizable: false,
@@ -28,9 +29,9 @@ function createWindow() {
 
   let winSize = screen.getPrimaryDisplay().workAreaSize
 
-  win.setPosition(winSize.width - 895, 10);
+  win.setPosition(winSize.width - 930, 10);
 
-  ipcMain.on("closeWindow", e => win.close());
+  ipcMain.on("closeWindow", e => app.quit());
 
   return win;
 }

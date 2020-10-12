@@ -48,12 +48,29 @@ var app = new Vue({
 		isListAll: false,
 		mdConverter: new showdown.Converter(),
 		slideTimmer: null,
+		colorClass: ["note-color-green", "note-color-yellow", "note-color-blue", "note-color-pink"],
+	},
+	computed: {
+		dateBuffer: function () {
+			let self = this;
+			let arr = self.currentDate.split("-");
+			let res = [];
+			for (let group of arr) {
+				res.push(group.split(''));
+			}
+			return res;
+		},
+		randColor: function () {
+			let self = this;
+			let rand = Math.floor(Math.random() * self.colorClass.length);
+			return self.colorClass[rand];
+		}
 	},
 	methods: {
 		moveTo: function (index) {
 			var self = this;
 			if (index != null) {
-				this.selectedIndex = index;
+				self.selectedIndex = index;
 			}
 			if (self.noteList[self.selectedIndex] == null) {
 				self.tmpBuffer = null;
@@ -208,6 +225,7 @@ var app = new Vue({
 		},
 		getNote(selectedDate) {
 			let self = this;
+			self.selectedIndex = 0;
 			ipc.send("getNotes", {
 				date: selectedDate
 			});
@@ -226,6 +244,7 @@ var app = new Vue({
 		menuAbout() {
 			layer.open({
 				title: '关于',
+				shade: 0,
 				content: "<h2 style='color:rgb(44,46,58);'>Simple Note</h2> \
 						  <p>Version : 1.0.0</p> \
 						  <p>Author : Jerry</p>\
@@ -243,6 +262,9 @@ var app = new Vue({
 			} else {
 				self.getNote(self.currentDate);
 			}
+		},
+		menuCalendar() {
+			$("#currentDateInput").click();
 		}
 	},
 	mounted: function () {
@@ -284,7 +306,25 @@ var app = new Vue({
 					self.dateRange = value;
 				}
 			});
+
+			laydate.render({
+				elem: '#currentDateInput',
+				trigger: 'click', //采用click弹出
+				value: self.currentDate,
+				done: function (value, date, endDate) {
+					console.log(value);
+					self.currentDate = value;
+					if (self.isShowEdit && self.isListAll) {
+						self.getNote();
+					} else {
+						self.getNote(self.currentDate);
+					}
+
+				}
+			});
 		});
+
+
 
 		// 获取数据
 		self.getNote(self.currentDate);
