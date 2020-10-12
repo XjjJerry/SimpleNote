@@ -16,6 +16,7 @@ function createWindow() {
       nodeIntegration: true
     },
     resizable: false,
+    clickThrough: 'pointer-events',
     transparent: true,
     frame: false,
     minimizable: false,
@@ -38,14 +39,50 @@ function createWindow() {
 
 app.whenReady().then(() => {
   const win = createWindow();
+
+  // 获取笔记
   ipcMain.on("getNotes", async (e, args) => {
-    // console.log(args);
-    let readData = await m_data.getNodes(args.date);
-    win.webContents.send('returnNotes', readData);
+    try {
+      let nodeList = await m_data.getNodes(args.date);
+      e.sender.send('getNotes_res', { list: nodeList, status: 1 });
+    } catch (ex) {
+      console.error(ex);
+      e.sender.send('getNotes_res', { msg: ex, status: -1 });
+    }
+
   });
 
-  ipcMain.on("saveNotes", async (e, args) => {
-    // console.log(args);
-    let readData = await m_data.saveNodes(args.date, args.list);
+  // 新增
+  ipcMain.on("addNote", async (e, args) => {
+    try {
+      let item = await m_data.addNote(args.note);
+      e.sender.send('addNote_res', { id: item.id, status: 1 });
+    } catch (ex) {
+      console.error(ex);
+      e.sender.send('addNote_res', { msg: ex, status: -1 });
+    }
   });
+
+  // 更新
+  ipcMain.on("updateNote", async (e, args) => {
+    try {
+      let item = await m_data.updateNote(args.note);
+      e.sender.send('updateNote_res', { id: item.id, status: 1 });
+    } catch (ex) {
+      console.error(ex);
+      e.sender.send('updateNote_res', { msg: ex, status: -1 });
+    }
+  });
+
+  // 删除
+  ipcMain.on("deleteNote", async (e, args) => {
+    try {
+      await m_data.deleteNote(args.id);
+      e.sender.send('deleteNote_res', { status: 1 });
+    } catch (ex) {
+      console.error(ex);
+      e.sender.send('deleteNote_res', { msg: ex, status: -1 });
+    }
+  });
+
 });

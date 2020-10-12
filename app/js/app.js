@@ -44,7 +44,10 @@ var app = new Vue({
 		isShowSysMenu: false,
 		noteList: [],
 		currentDate: getDate(),
-		mdConverter: new showdown.Converter()
+		dateRange: getDate() + " ~ " + getDate(),
+		isListAll: false,
+		mdConverter: new showdown.Converter(),
+		slideTimmer: null,
 	},
 	methods: {
 		moveTo: function (index) {
@@ -59,31 +62,33 @@ var app = new Vue({
 				return;
 			}
 			self.tmpBuffer = self.noteList[self.selectedIndex].content;
+			self.dateRange = self.noteList[self.selectedIndex].enableRange;
 			var move = -this.selectedIndex * 300 + 140;
 			$(".scroll-list").css("transform", "translateX(" + move + "px)");
 		},
+		switchNote(index) {
+			let self = this;
+			self.chageToSave(function () {
+				self.moveTo(index);
+			});
+		},
 		toggleEditor() {
 			let self = this;
+
+			if (self.isShowEdit == true && self.isListAll == true) {
+				self.getNote(self.currentDate);
+				self.isListAll = false;
+			}
 			self.isShowEdit = self.isShowEdit ? false : true;
+
 		},
 		toggleSysMenu() {
 			let self = this;
 			self.isShowSysMenu = self.isShowSysMenu ? false : true;
 		},
-		addNote: function () {
+		chageToSave(callback) {
 			var self = this;
-
-			var tmpFun = function () {
-				self.noteList.push({
-					content: null,
-					md: null,
-					saveTime: null
-				});
-				self.selectedIndex = self.noteList.length - 1;
-				self.moveTo();
-			};
-
-			if (self.noteList.length != 0 && self.noteList[self.selectedIndex].content != self.tmpBuffer) {
+			if (self.noteList.length != 0 && (self.noteList[self.selectedIndex].content != self.tmpBuffer || self.noteList[self.selectedIndex].enableRange != self.dateRange)) {
 				layer.open({
 					content: '是否保存修改？',
 					closeBtn: 0,
@@ -91,34 +96,68 @@ var app = new Vue({
 					btn: ['确定', "取消"],
 					yes: function (index, layero) {
 						self.saveNote();
-						tmpFun();
+						callback();
 						layer.close(index);
 					},
 					btn2: function (index, layero) {
-						tmpFun();
+						// 判断是否新增项，若是直接删除
+						if (self.noteList[self.selectedIndex].id == null) {
+							self.noteList.pop();
+						}
+						callback();
 						layer.close(index);
 					}
 				});
 			} else {
-				tmpFun();
+				callback();
 			}
+		},
+		addNote: function () {
+			let self = this;
+
+			let tmpFun = function () {
+				self.noteList.push({
+					id: null,
+					content: null,
+					md: null,
+					saveTime: null,
+					enableRange: getDate() + " ~ " + getDate()
+				});
+				self.selectedIndex = self.noteList.length - 1;
+				self.moveTo();
+			};
+			self.chageToSave(tmpFun);
 		},
 		deleteNote: function () {
 			var self = this;
-			layer.confirm('确定删除该笔记？', {
-				shade: 0
-			}, function (index) {
+			let id = self.noteList[self.selectedIndex].id;
+			function tmp() {
 				self.noteList.splice(self.selectedIndex, 1);
 				self.selectedIndex--;
 				if (self.selectedIndex < 0) {
 					self.selectedIndex = 0;
 				}
 				self.moveTo();
+			}
+			layer.confirm('确定删除该笔记？', {
+				shade: 0
+			}, function (index) {
 				layer.close(index);
-				ipc.send("saveNotes", {
-					date: self.currentDate,
-					list: self.noteList
-				});
+				if (id != null) {
+					ipc.send("deleteNote", {
+						id: id
+					});
+					// 删除笔记响应		
+					ipc.once('deleteNote_res', (event, arg) => {
+						if (arg.status == 1) {
+							tmp();
+						} else {
+							console.error("删除失败");
+						}
+					});
+				} else {
+					tmp();
+				}
 			});
 
 		},
@@ -127,15 +166,38 @@ var app = new Vue({
 			self.noteList[self.selectedIndex].content = self.tmpBuffer;
 			self.noteList[self.selectedIndex].md = self.mdConverter.makeHtml(self.noteList[self.selectedIndex].content);
 			self.noteList[self.selectedIndex].saveTime = getTime();
+			self.noteList[self.selectedIndex].enableRange = self.dateRange;
+			if (self.noteList[self.selectedIndex].id == null) {
+				ipc.send("addNote", {
+					note: self.noteList[self.selectedIndex]
+				});
+				// 新增笔记响应		
+				ipc.once('addNote_res', (event, arg) => {
+					if (arg.status == 1) {
+						self.noteList[self.selectedIndex].id = arg.id;
+					} else {
+						console.error("新增失败");
+					}
+				});
+			} else {
+				ipc.send("updateNote", {
+					note: self.noteList[self.selectedIndex]
+				});
+				// 更新笔记响应		
+				ipc.once('updateNote_res', (event, arg) => {
+					if (arg.status == 1) {
+						self.noteList[self.selectedIndex].id = arg.id;
+					} else {
+						console.error("更新失败");
+					}
+				});
+			}
 
-			ipc.send("saveNotes", {
-				date: self.currentDate,
-				list: self.noteList
-			});
 		},
 		resetNote: function () {
 			var self = this;
 			self.tmpBuffer = self.noteList[self.selectedIndex].content;
+			self.dateRange = self.noteList[self.selectedIndex].enableRange;
 		},
 		closeWindow: function () {
 			layer.confirm('确定退出？', {
@@ -144,10 +206,19 @@ var app = new Vue({
 				ipc.send("closeWindow");
 			});
 		},
-		getNote() {
+		getNote(selectedDate) {
 			let self = this;
 			ipc.send("getNotes", {
-				date: self.currentDate
+				date: selectedDate
+			});
+			// 获取数据响应		
+			ipc.once('getNotes_res', (event, arg) => {
+				if (arg.status == 1) {
+					self.noteList = arg.list;
+					self.moveTo();
+				} else {
+					console.error("获取笔记失败");
+				}
 			});
 		},
 
@@ -163,11 +234,20 @@ var app = new Vue({
 		},
 		menuSet() {
 
+		},
+		menuAll() {
+			let self = this;
+			self.isListAll = self.isListAll ? false : true;
+			if (self.isListAll) {
+				self.getNote();
+			} else {
+				self.getNote(self.currentDate);
+			}
 		}
 	},
 	mounted: function () {
 		var self = this;
-		setInterval(function () {
+		function slide() {
 			if (self.isShowEdit || self.noteList.length <= 1) {
 				return;
 			}
@@ -176,16 +256,37 @@ var app = new Vue({
 				self.selectedIndex = 0;
 			}
 			self.moveTo();
-		}, 5000);
+		}
+		self.slideTimmer = setInterval(slide, 5000);
 
-		ipc.on('returnNotes', (event, arg) => {
-			// console.log("+++++++++++++++++");
-			// console.log(arg);
-			self.noteList = arg.list;
-			self.currentDate = arg.date;
-			self.moveTo();
+		$(".scroll-list").mouseenter(function () {
+			clearInterval(self.slideTimmer);
+			self.slideTimmer = null;
 		});
 
-		self.getNote();
+		$(".scroll-list").mouseleave(function () {
+			if (self.slideTimmer != null) {
+				clearInterval(self.slideTimmer);
+				self.slideTimmer = null;
+			}
+			self.slideTimmer = setInterval(slide, 5000);
+		});
+
+		//初始化日期控件
+		layui.use('laydate', function () {
+			var laydate = layui.laydate;
+			laydate.render({
+				elem: '#enableDateInput',
+				range: "~",
+				trigger: 'click',
+				done: function (value, date, endDate) {
+					console.log(value);
+					self.dateRange = value;
+				}
+			});
+		});
+
+		// 获取数据
+		self.getNote(self.currentDate);
 	}
 });

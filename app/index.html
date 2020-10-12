@@ -13,15 +13,15 @@
 
 </head>
 
-<body style="background-color: rgba(0,0,0,0);overflow: hidden;">
+<body style="background-color: rgba(0,0,0,0);overflow: hidden;pointer-events: none;">
 	<div id="app" style="margin-left: 115px;">
 		<div class="scroll-list">
-			<div class="scroll-panel" v-for="(note,index) in noteList" :key="index" @click="moveTo(index)"
+			<div class="scroll-panel" v-for="(note,index) in noteList" :key="index" @click="switchNote(index)"
 				:class="{'out':index!=selectedIndex&&index!=selectedIndex-1&&index!=selectedIndex+1,'left':index==selectedIndex-1,'right':index==selectedIndex+1}">
 				<div class="scroll-body">
 					<div v-html="note.md" class="body-content markdown-body"></div>
 					<div class="note-msg">
-						<span>{{note.saveTime}}</span>
+						<span>{{note.enableRange}}</span>
 					</div>
 				</div>
 			</div>
@@ -45,21 +45,27 @@
 				<button @click="deleteNote()" v-if="noteList[selectedIndex]!=null">
 					<span class="iconfont icon-shanchu"></span>
 				</button>
-				<button @click="saveNote()" v-if="noteList.length!=0&&tmpBuffer!=noteList[selectedIndex].content">
+				<button @click="saveNote()"
+					v-if="noteList.length!=0&&(tmpBuffer!=noteList[selectedIndex].content||dateRange!=noteList[selectedIndex].enableRange)">
 					<span class="iconfont icon-baocun"></span>
 				</button>
-				<button @click="resetNote()" v-if="noteList.length!=0&&tmpBuffer!=noteList[selectedIndex].content">
+				<button @click="resetNote()"
+					v-if="noteList.length!=0&&(tmpBuffer!=noteList[selectedIndex].content||dateRange!=noteList[selectedIndex].enableRange)">
 					<span class="iconfont icon-zhongzhi"></span>
 				</button>
 			</div>
 			<div class="editor">
+				<div style="padding: 5px 0 10px 0;font-size: 14px;">
+					<input type="text" id="enableDateInput" class="layui-input" placeholder="请选择生效日期"
+						v-model="dateRange" readonly>
+				</div>
 				<textarea class="text-area" rows="10" v-model="tmpBuffer"></textarea>
 			</div>
 			<div class="menu">
 				<button>
 					<span class="iconfont icon-rili"></span>
 				</button>
-				<button>
+				<button @click="menuAll()">
 					<span class="iconfont icon-quanbu"></span>
 				</button>
 				<button @click="toggleSysMenu()">
