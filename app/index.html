@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8" />
+	<title></title>
+	<link href="./css/app.css" rel="stylesheet" />
+
+	<link href="./resource/icon/iconfont.css" rel="stylesheet">
+	<link href="./lib/layui/css/layui.css" rel="stylesheet">
+
+	<link href="./css/github-markdown.css" rel="stylesheet" />
+
+</head>
+
+<body style="background-color: rgba(0,0,0,0);overflow: hidden;">
+	<div id="app" style="margin-left: 115px;">
+		<div class="scroll-list">
+			<div class="scroll-panel" v-for="(note,index) in noteList" :key="index" @click="moveTo(index)"
+				:class="{'out':index!=selectedIndex&&index!=selectedIndex-1&&index!=selectedIndex+1,'left':index==selectedIndex-1,'right':index==selectedIndex+1}">
+				<div class="scroll-body">
+					<div v-html="note.md" class="body-content markdown-body"></div>
+					<div class="note-msg">
+						<span>{{note.saveTime}}</span>
+					</div>
+				</div>
+			</div>
+			<div class="scroll-panel" v-if="noteList.length==0" style="position: relative;left:140px;">
+				<div class="glass-body verticle-middle">
+					<span style="color:rgb(100,100,100);font-size:16px;font-weight:600;">暂无笔记。。。</span>
+				</div>
+			</div>
+		</div>
+		<div style="padding: 5px 50px 10px 142px;">
+			<button class="glass toggle-btn" @click="toggleEditor()">
+				<span class="iconfont" :class="{'icon-shang':isShowEdit,'icon-xiala':!isShowEdit}"></span>
+			</button>
+			<img src="./img/note.png" style="height: 30px;-webkit-app-region: drag;" />
+		</div>
+		<div class="work" :class="{'show':isShowEdit,'hide':!isShowEdit}">
+			<div class="menu">
+				<button @click="addNote()">
+					<span class="iconfont icon-tianjia"></span>
+				</button>
+				<button @click="deleteNote()" v-if="noteList[selectedIndex]!=null">
+					<span class="iconfont icon-shanchu"></span>
+				</button>
+				<button @click="saveNote()" v-if="noteList.length!=0&&tmpBuffer!=noteList[selectedIndex].content">
+					<span class="iconfont icon-baocun"></span>
+				</button>
+				<button @click="resetNote()" v-if="noteList.length!=0&&tmpBuffer!=noteList[selectedIndex].content">
+					<span class="iconfont icon-zhongzhi"></span>
+				</button>
+			</div>
+			<div class="editor">
+				<textarea class="text-area" rows="10" v-model="tmpBuffer"></textarea>
+			</div>
+			<div class="menu">
+				<button>
+					<span class="iconfont icon-rili"></span>
+				</button>
+				<button>
+					<span class="iconfont icon-quanbu"></span>
+				</button>
+				<button @click="toggleSysMenu()">
+					<span class="iconfont icon-shezhi"></span>
+				</button>
+				<button @click="closeWindow()">
+					<span class="iconfont icon-exittuichu"></span>
+				</button>
+			</div>
+			<div class="menu-list-zoom">
+				<ul class="menu-list" :class="{'show':isShowSysMenu,'hide':!isShowSysMenu}">
+					<li @click="menuSet()">系统配置</li>
+					<li @click="menuAbout()">关于</li>
+					<li @click="closeWindow()">退出</li>
+				</ul>
+			</div>
+		</div>
+	</div>
+	<script>
+		window.nodeRequire = require;
+		delete window.require;
+		delete window.exports;
+		delete window.module;
+	</script>
+
+	<script src="./js/jquery-3.4.1.min.js" type="text/javascript" charset="utf-8"></script>
+	<script src="./js/showdown.min.js" type="text/javascript" charset="utf-8"></script>
+	<script src="./js/vue.js" type="text/javascript" charset="utf-8"></script>
+
+	<script src="./lib/layui/layui.all.js" type="text/javascript" charset="utf-8"></script>
+
+	<script src="./js/app.js" type="text/javascript" charset="utf-8"></script>
+</body>
+
+</html>
