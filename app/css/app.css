@@ -1,5 +1,9 @@
-body img{
-	pointer-events: all;
+input[disabled]{
+	background-color: rgba(200,200,200,1.0);
+}
+
+textarea[disabled]{
+	background-color: rgba(200,200,200,1.0);
 }
 
 .scroll-list {
@@ -33,7 +37,7 @@ body img{
 	transition: all ease-in-out 0.4s;
 
 	/* position: relative; */
-	pointer-events: all;
+	
 }
 
 .scroll-list .scroll-panel .scroll-body>.body-content {
@@ -42,6 +46,10 @@ body img{
 	max-height: 200px;
 	white-space: normal;
 	word-break: break-all;
+}
+
+.scroll-list .scroll-panel .scroll-body>.body-content::-webkit-scrollbar{
+	display: none;
 }
 
 .scroll-list .scroll-panel .glass-body {
@@ -62,7 +70,7 @@ body img{
 	opacity: 1.0;
 	transition: all ease-in-out 0.4s;
 
-	pointer-events: all;
+	
 }
 
 .scroll-list .scroll-panel.left .scroll-body {
@@ -98,7 +106,7 @@ body img{
 	white-space: nowrap;
 	font-size: 0;
 
-	pointer-events: all;
+	
 }
 
 
@@ -211,6 +219,11 @@ body img{
 	box-shadow: 0 0 5px rgba(0, 0, 0, 0.2) inset;
 }
 
+button[keep-on]{
+	box-sizing: 0 0 5px rgba(0,0,0,0.4) inset;
+	background-color: rgb(150,150,150);
+}
+
 .work .editor {
 	width: 500px;
 	height: 100%;
@@ -267,7 +280,7 @@ body img{
 	border-radius: 4px;
 	color: rgb(120, 120, 120);
 
-	pointer-events: all;
+	
 }
 
 .verticle-middle>* {

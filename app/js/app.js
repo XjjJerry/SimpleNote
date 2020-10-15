@@ -91,12 +91,28 @@ var app = new Vue({
 		},
 		toggleEditor() {
 			let self = this;
-
-			if (self.isShowEdit == true && self.isListAll == true) {
-				self.getNote(self.currentDate);
-				self.isListAll = false;
-			}
 			self.isShowEdit = self.isShowEdit ? false : true;
+			let isReload = false;
+			let isResetPos = false;
+			if (self.isShowEdit == false) {
+				if (self.isListAll == true) {
+					self.isListAll = false;
+					isReload = true;
+				}
+				let nowDate = getDate();
+				if (nowDate != self.currentDate) {
+					self.currentDate = nowDate;
+					isReload = true;
+					isResetPos = true;
+					self.selectedIndex = 0;
+				}
+				if (isReload) {
+					self.getNote(self.currentDate);
+					if (isResetPos) {
+						self.moveTo();
+					}
+				}
+			}
 
 		},
 		toggleSysMenu() {
@@ -105,7 +121,7 @@ var app = new Vue({
 		},
 		chageToSave(callback) {
 			var self = this;
-			if (self.noteList.length != 0 && (self.noteList[self.selectedIndex].content != self.tmpBuffer || self.noteList[self.selectedIndex].enableRange != self.dateRange)) {
+			if (self.noteList.length != 0 && (self.noteList[self.selectedIndex].content != self.tmpBuffer || self.noteList[self.selectedIndex].enableRange != self.dateRange || self.noteList[self.selectedIndex].id == null)) {
 				layer.open({
 					content: '是否保存修改？',
 					closeBtn: 0,
@@ -242,17 +258,25 @@ var app = new Vue({
 
 		// 菜单功能
 		menuAbout() {
+			let self = this;
 			layer.open({
 				title: '关于',
 				shade: 0,
 				content: "<h2 style='color:rgb(44,46,58);'>Simple Note</h2> \
 						  <p>Version : 1.0.0</p> \
 						  <p>Author : Jerry</p>\
-						  <p>date : 2020-10-12 </p>"
+						  <p>date : 2020-10-16 </p>"
 			});
+			self.isShowSysMenu = false;
 		},
 		menuSet() {
-
+			let self = this;
+			layer.open({
+				title: '系统配置',
+				shade: 0,
+				content: "<h2 style='color:rgb(44,46,58);'>敬请期待</h2>"
+			});
+			self.isShowSysMenu = false;
 		},
 		menuAll() {
 			let self = this;
@@ -263,7 +287,8 @@ var app = new Vue({
 				self.getNote(self.currentDate);
 			}
 		},
-		menuCalendar() {
+		btnCalendar() {
+			let self = this;
 			$("#currentDateInput").click();
 		}
 	},
@@ -301,6 +326,7 @@ var app = new Vue({
 				elem: '#enableDateInput',
 				range: "~",
 				trigger: 'click',
+				btns: ['confirm'],
 				done: function (value, date, endDate) {
 					console.log(value);
 					self.dateRange = value;
@@ -311,6 +337,7 @@ var app = new Vue({
 				elem: '#currentDateInput',
 				trigger: 'click', //采用click弹出
 				value: self.currentDate,
+				btns: ['now', 'confirm'],
 				done: function (value, date, endDate) {
 					console.log(value);
 					self.currentDate = value;
@@ -324,7 +351,16 @@ var app = new Vue({
 			});
 		});
 
-
+		// 日期时钟
+		setInterval(function () {
+			if (self.isShowEdit == false) {
+				let nowDate = getDate();
+				if (nowDate != self.currentDate) {
+					self.currentDate = nowDate;
+					self.getNote(self.currentDate);
+				}
+			}
+		}, 60000);
 
 		// 获取数据
 		self.getNote(self.currentDate);

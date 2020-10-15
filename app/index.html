@@ -21,7 +21,7 @@
 				<div class="scroll-body" :class="true?colorClass[index%colorClass.length]:''">
 					<div v-html="note.md" class="body-content markdown-body"></div>
 					<div class="note-msg">
-						<span>{{note.enableRange}}</span>
+						<span>有效期：{{note.enableRange}}</span>
 					</div>
 				</div>
 			</div>
@@ -46,17 +46,17 @@
 		</div>
 		<div class="work" :class="{'show':isShowEdit,'hide':!isShowEdit}">
 			<div class="menu">
-				<button @click="addNote()">
+				<button title="添加笔记" @click="addNote()">
 					<span class="iconfont icon-tianjia"></span>
 				</button>
-				<button @click="deleteNote()" v-if="noteList[selectedIndex]!=null">
+				<button title="删除笔记" @click="deleteNote()" v-if="noteList[selectedIndex]!=null">
 					<span class="iconfont icon-shanchu"></span>
 				</button>
-				<button @click="saveNote()"
+				<button title="保存笔记" @click="saveNote()"
 					v-if="noteList.length!=0&&(tmpBuffer!=noteList[selectedIndex].content||dateRange!=noteList[selectedIndex].enableRange)">
 					<span class="iconfont icon-baocun"></span>
 				</button>
-				<button @click="resetNote()"
+				<button title="回退修改" @click="resetNote()"
 					v-if="noteList.length!=0&&(tmpBuffer!=noteList[selectedIndex].content||dateRange!=noteList[selectedIndex].enableRange)">
 					<span class="iconfont icon-zhongzhi"></span>
 				</button>
@@ -64,23 +64,24 @@
 			<div class="editor">
 				<div style="padding: 5px 0 10px 0;font-size: 14px;">
 					<input type="text" id="enableDateInput" class="layui-input" placeholder="请选择生效日期"
-						v-model="dateRange" readonly>
+						v-model="dateRange" readonly :disabled="noteList[selectedIndex]==null">
 				</div>
-				<textarea class="text-area" rows="10" v-model="tmpBuffer"></textarea>
+				<textarea class="text-area" rows="10" v-model="tmpBuffer"
+					:disabled="noteList[selectedIndex]==null"></textarea>
 			</div>
 			<div class="menu">
-				<button @click="menuCalendar()" style="position: relative;">
+				<button title="查看日期" @click="btnCalendar()" style="position: relative;">
 					<span class="iconfont icon-rili"></span>
 					<span style="font-size: 0;position: absolute;top:0;bottom: 0;left: 0;right: 0;"
 						id="currentDateInput"></span>
 				</button>
-				<button @click="menuAll()">
+				<button title="全部便签" @click="menuAll()" :keep-on="isListAll">
 					<span class="iconfont icon-quanbu"></span>
 				</button>
-				<button @click="toggleSysMenu()">
+				<button title="系统菜单" @click="toggleSysMenu()">
 					<span class="iconfont icon-shezhi"></span>
 				</button>
-				<button @click="closeWindow()">
+				<button title="退出应用" @click="closeWindow()">
 					<span class="iconfont icon-exittuichu"></span>
 				</button>
 			</div>

@@ -36,6 +36,17 @@ var getTime = function () {
     return year + "-" + tmp.mon + "-" + tmp.day + " " + tmp.hour + ":" + tmp.min + ":" + tmp.sec;
 };
 
+let getEndDate = (item) => {
+    return item["enableRange"].split(" ~ ")[1];
+};
+
+let sortNotes = (noteList) => {
+    noteList.sort((a, b) => {
+        return getEndDate(a) > getEndDate(b) ? -1 : 1;
+    });
+    return noteList;
+};
+
 let getAllNotes = async () => {
     let folderPath = m_path.join(".", m_config["save_path"]);
     let folderExist = await m_file.exists(folderPath);
@@ -73,7 +84,7 @@ instance.getNodes = async (selectedDate) => {
         let res = [];
         let allList = await getAllNotes();
         if (selectedDate == null || selectedDate == "") {
-            return allList;
+            return sortNotes(allList);
         }
 
         for (let item of allList) {
@@ -87,29 +98,13 @@ instance.getNodes = async (selectedDate) => {
                 res.push(item);
             }
         }
-        return res;
+        // console.log(res);
+        // console.log(sortNotes(res));
+        return sortNotes(res);
     } catch (ex) {
         console.error(ex);
     }
 };
-
-// instance.saveNodes = async (datetime, list) => {
-//     // console.log(datetime);
-//     try {
-//         let folderPath = m_path.join(".", m_config["save_path"]);
-//         let folderExist = await m_file.exists(folderPath);
-//         if (!folderExist) {
-//             await m_file.createDir(folderExist);
-//         }
-//         let filePath = m_path.join(".", m_config["save_path"], datetime + ".json");
-//         await m_file.writeFile(filePath, JSON.stringify({
-//             date: datetime,
-//             list: list
-//         }), "utf-8");
-//     } catch (ex) {
-//         console.error(ex);
-//     }
-// };
 
 instance.addNote = async (note) => {
     try {
@@ -149,13 +144,13 @@ instance.deleteNote = async (id) => {
         let allList = await getAllNotes();
         let findIndex = -1;
         for (let i = 0; i < allList.length; i++) {
-            if (allList[i].id == note.id) {
+            if (allList[i].id == id) {
                 findIndex = i;
                 break;
             }
         }
         if (findIndex == -1) {
-            throw "找不到指定的笔记，id：" + note.id;
+            throw "找不到指定的笔记，id：" + id;
         }
         allList.splice(findIndex, 1);
         await saveAllNotes(allList);
